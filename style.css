@@ -355,6 +355,7 @@ button.secondary {
 
 .huffman-bar-input { background: var(--accent); }
 .huffman-bar-output { background: var(--good); }
+.huffman-bar-alt { background: var(--accent-2); }
 
 .huffman-bar-value {
   width: 6rem;

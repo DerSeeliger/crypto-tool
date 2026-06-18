@@ -5,6 +5,7 @@ import * as Vigenere from './vigenere.js';
 import * as Substitution from './substitution.js';
 import { renderFrequencyChart } from './frequency.js';
 import * as Huffman from './huffman.js';
+import * as Encoding from './encoding.js';
 import { ALPHABET, letterFrequencies } from './utils.js';
 
 // ---------- Tabs ----------
@@ -220,6 +221,46 @@ document.getElementById('substitution-reset-btn').addEventListener('click', () =
   buildMappingTable();
 });
 
+// ---------- Substitution: stärkerer Auto-Vorschlag (Bigramm-Hill-Climbing) ----------
+const hillclimbInput = document.getElementById('substitution-hillclimb-input');
+const hillclimbBtn = document.getElementById('substitution-hillclimb-btn');
+const hillclimbStatus = document.getElementById('substitution-hillclimb-status');
+const hillclimbKey = document.getElementById('substitution-hillclimb-key');
+const hillclimbOutput = document.getElementById('substitution-hillclimb-output');
+const hillclimbApplyBtn = document.getElementById('substitution-hillclimb-apply-btn');
+
+let lastHillclimbMapping = null;
+let lastHillclimbText = '';
+
+hillclimbBtn.addEventListener('click', () => {
+  hillclimbStatus.textContent = 'Berechne... (kann einige Sekunden dauern)';
+  hillclimbStatus.className = 'status';
+  hillclimbBtn.disabled = true;
+  // setTimeout lässt den Browser den "Berechne..."-Status noch anzeigen,
+  // bevor das (synchrone, rechenintensive) Hill-Climbing den Thread blockiert.
+  setTimeout(() => {
+    const lang = document.getElementById('substitution-hillclimb-lang').value;
+    const text = hillclimbInput.value;
+    const { mapping } = Substitution.suggestMappingHillClimb(text, lang);
+
+    lastHillclimbMapping = mapping;
+    lastHillclimbText = text;
+
+    hillclimbKey.value = ALPHABET.split('').map(ch => mapping[ch]).join('');
+    hillclimbOutput.value = Substitution.decrypt(text, mapping);
+    hillclimbStatus.textContent = 'Fertig - Ergebnis prüfen, bei Bedarf unten in die Zuordnungstabelle übernehmen und per Hand korrigieren.';
+    hillclimbStatus.className = 'status ok';
+    hillclimbBtn.disabled = false;
+  }, 20);
+});
+
+hillclimbApplyBtn.addEventListener('click', () => {
+  if (!lastHillclimbMapping) return;
+  cipherInput.value = lastHillclimbText;
+  refreshSubstitutionAnalysis();
+  buildMappingTable(lastHillclimbMapping);
+});
+
 // ---------- Häufigkeitsanalyse (allgemein) ----------
 document.getElementById('frequency-analyze-btn').addEventListener('click', () => {
   const text = document.getElementById('frequency-input').value;
@@ -286,3 +327,118 @@ document.getElementById('huffman-compress-btn').addEventListener('click', () => 
 
   document.getElementById('huffman-output').value = Huffman.encode(text, result.codes);
 });
+
+// ---------- Alphanumerische Codes (ASCII / UTF-8 / UTF-16 / Base64) ----------
+const encodingFormat = document.getElementById('encoding-format');
+const encodingBase = document.getElementById('encoding-base');
+const encodingText = document.getElementById('encoding-text');
+const encodingCode = document.getElementById('encoding-code');
+const encodingStatus = document.getElementById('encoding-status');
+
+function setEncodingStatus(message, ok) {
+  encodingStatus.textContent = message;
+  encodingStatus.className = 'status' + (ok ? ' ok' : '');
+}
+
+function updateEncodingBaseAvailability() {
+  encodingBase.disabled = encodingFormat.value === 'base64';
+}
+encodingFormat.addEventListener('change', updateEncodingBaseAvailability);
+updateEncodingBaseAvailability();
+
+document.getElementById('encoding-encode-btn').addEventListener('click', () => {
+  const format = encodingFormat.value;
+  const base = encodingBase.value;
+  const text = encodingText.value;
+  try {
+    if (format === 'base64') {
+      encodingCode.value = Encoding.toBase64(text);
+      setEncodingStatus('', true);
+    } else if (format === 'ascii') {
+      const { codes, invalidChars } = Encoding.toAsciiCodes(text);
+      encodingCode.value = Encoding.formatNumbers(codes, base, 8);
+      setEncodingStatus(
+        invalidChars.length > 0
+          ? `Achtung: ${invalidChars.length} Zeichen außerhalb von ASCII (0-127), z.B. "${invalidChars[0].char}"`
+          : '', invalidChars.length === 0
+      );
+    } else if (format === 'utf8') {
+      encodingCode.value = Encoding.formatNumbers(Encoding.toUtf8Bytes(text), base, 8);
+      setEncodingStatus('', true);
+    } else if (format === 'utf16') {
+      encodingCode.value = Encoding.formatNumbers(Encoding.toUtf16Units(text), base, 16);
+      setEncodingStatus('', true);
+    }
+  } catch (e) {
+    setEncodingStatus('Fehler beim Kodieren: ' + e.message, false);
+  }
+  refreshEncodingAnalysis();
+});
+
+document.getElementById('encoding-decode-btn').addEventListener('click', () => {
+  const format = encodingFormat.value;
+  const base = encodingBase.value;
+  const code = encodingCode.value;
+  try {
+    if (format === 'base64') {
+      encodingText.value = Encoding.fromBase64(code);
+    } else {
+      const numbers = Encoding.parseNumbers(code, base);
+      if (numbers.some(Number.isNaN)) throw new Error('ungültige Zahl in der Eingabe');
+      if (format === 'ascii') encodingText.value = Encoding.fromAsciiCodes(numbers);
+      else if (format === 'utf8') encodingText.value = Encoding.fromUtf8Bytes(numbers);
+      else if (format === 'utf16') encodingText.value = Encoding.fromUtf16Units(numbers);
+    }
+    setEncodingStatus('', true);
+  } catch (e) {
+    setEncodingStatus('Fehler beim Dekodieren: ' + e.message, false);
+  }
+  refreshEncodingAnalysis();
+});
+
+function refreshEncodingAnalysis() {
+  const text = encodingText.value;
+  const stats = Encoding.sizeStats(text);
+
+  document.getElementById('encoding-stat-chars').textContent = `${stats.chars}`;
+  document.getElementById('encoding-stat-ascii').textContent = stats.asciiBits !== null ? `${stats.asciiBits} Bit` : 'nicht möglich';
+  document.getElementById('encoding-stat-utf8').textContent = `${stats.utf8Bits} Bit (${stats.utf8Bytes} Bytes)`;
+  document.getElementById('encoding-stat-utf16').textContent = `${stats.utf16Bits} Bit (${stats.utf16Units} Einheiten)`;
+
+  const barsContainer = document.getElementById('encoding-bars');
+  barsContainer.innerHTML = '';
+  const bars = [
+    { label: 'ASCII', bits: stats.asciiBits, cls: 'huffman-bar-input' },
+    { label: 'UTF-8', bits: stats.utf8Bits, cls: 'huffman-bar-output' },
+    { label: 'UTF-16', bits: stats.utf16Bits, cls: 'huffman-bar-alt' },
+  ];
+  const maxBits = Math.max(...bars.map(b => b.bits || 0), 1);
+  for (const bar of bars) {
+    const row = document.createElement('div');
+    row.className = 'huffman-bar-row';
+    const widthPct = bar.bits !== null ? (bar.bits / maxBits) * 100 : 0;
+    row.innerHTML = `
+      <span class="huffman-bar-label">${bar.label}</span>
+      <div class="huffman-bar-track"><div class="huffman-bar ${bar.cls}" style="width:${widthPct}%"></div></div>
+      <span class="huffman-bar-value">${bar.bits !== null ? bar.bits + ' Bit' : '–'}</span>
+    `;
+    barsContainer.appendChild(row);
+  }
+
+  const tbody = document.querySelector('#encoding-char-table tbody');
+  tbody.innerHTML = '';
+  for (const row of Encoding.charTable(text)) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="huffman-char">${Huffman.displayChar(row.char)}</td>
+      <td>U+${row.codePoint.toString(16).toUpperCase().padStart(4, '0')}</td>
+      <td>${row.ascii !== null ? row.ascii : '–'}</td>
+      <td class="huffman-code">${row.utf8Bytes.map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(' ')}</td>
+      <td class="huffman-code">${row.utf16Units.map(u => '0x' + u.toString(16).toUpperCase().padStart(4, '0')).join(' ')}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+encodingText.addEventListener('input', refreshEncodingAnalysis);
+refreshEncodingAnalysis();

@@ -15,6 +15,7 @@
     <button class="tab-btn" data-tab="substitution">Substitution</button>
     <button class="tab-btn" data-tab="frequency">Häufigkeitsanalyse</button>
     <button class="tab-btn" data-tab="huffman">Huffman</button>
+    <button class="tab-btn" data-tab="encoding">Alphanumerische Codes</button>
   </nav>
 </header>
 
@@ -141,6 +142,34 @@
       <label for="substitution-decoded-preview">Live-Vorschau (entschlüsselt mit obiger Zuordnung)</label>
       <textarea id="substitution-decoded-preview" rows="5" readonly></textarea>
     </div>
+
+    <div class="card">
+      <h3>Stärkerer Auto-Vorschlag (Bigramm-Hill-Climbing)</h3>
+      <p class="hint">Die einfache Häufigkeitsanalyse oben ordnet nur einzelne Buchstaben nach Rang zu - das scheitert oft, weil viele Buchstaben (z.B. R, S, N, I, O, A im Englischen) ähnlich häufig sind. Diese Methode bewertet stattdessen ganze Zuordnungen anhand der Häufigkeit von Buchstabenpaaren (Bigrammen wie "CH", "EI", "TH", "EN") in der jeweils entschlüsselten Vorschau und verbessert die Zuordnung iterativ durch zufällige Buchstabentausche (Hill-Climbing, mehrere Neustarts gegen lokale Optima). Liefert bei genügend langem Geheimtext meist deutlich mehr richtige Buchstaben, braucht dafür aber ein paar Sekunden Rechenzeit - das Ergebnis ist ein verbesserter Startpunkt, keine Garantie für eine perfekte Lösung. Eigenständiges Werkzeug mit eigenem Ein-/Ausgabefeld, unabhängig von der Tabelle oben.</p>
+
+      <label for="substitution-hillclimb-input">Geheimtext</label>
+      <textarea id="substitution-hillclimb-input" rows="6" placeholder="Geheimtext hier einfügen..."></textarea>
+
+      <div class="row">
+        <label for="substitution-hillclimb-lang">Sprache</label>
+        <select id="substitution-hillclimb-lang">
+          <option value="de">Deutsch</option>
+          <option value="en">Englisch</option>
+        </select>
+        <button id="substitution-hillclimb-btn">Starke Analyse starten</button>
+      </div>
+      <span id="substitution-hillclimb-status" class="status"></span>
+
+      <label for="substitution-hillclimb-key">Gefundene Zuordnung (Geheimtext A-Z → Klartext, in dieser Reihenfolge)</label>
+      <input type="text" id="substitution-hillclimb-key" readonly placeholder="Erscheint nach der Analyse...">
+
+      <label for="substitution-hillclimb-output">Lösung (entschlüsselter Text)</label>
+      <textarea id="substitution-hillclimb-output" rows="6" readonly placeholder="Erscheint nach der Analyse..."></textarea>
+
+      <div class="row">
+        <button id="substitution-hillclimb-apply-btn" class="secondary">In Zuordnungstabelle oben übernehmen (zum manuellen Feinschliff)</button>
+      </div>
+    </div>
   </section>
 
   <!-- ============ FREQUENCY ============ -->
@@ -219,6 +248,66 @@
     <div class="card" id="huffman-output-card" hidden>
       <h3>Kodierte Ausgabe (Bitfolge)</h3>
       <textarea id="huffman-output" rows="5" readonly></textarea>
+    </div>
+  </section>
+
+  <!-- ============ ENCODING ============ -->
+  <section id="tab-encoding" class="tab-panel">
+    <h2>Alphanumerische Codes</h2>
+
+    <div class="card">
+      <p class="hint">Wandelt Text in numerische Codes um und zurück. ASCII deckt nur die Zeichen 0-127 ab, UTF-8 kodiert jedes Unicode-Zeichen mit 1-4 Bytes variabler Länge, UTF-16 mit 1-2 16-Bit-Einheiten (Surrogatpaare für Emoji &amp; Co.). Base64 stellt beliebige Bytes mit nur 64 druckbaren Zeichen dar. Hex-Werte erhalten das übliche Präfix <code>0x</code>, Binärwerte <code>0b</code>. Für UTF-16 selbst gibt es keinen eigenen Zahlenpräfix: Unicode-Codepoints schreibt man unabhängig von der Kodierung als <code>U+XXXX</code> (siehe Zeichen-Tabelle), und nur am Anfang eines UTF-16-<em>Bytestroms</em> markiert die Byte-Order-Mark (BOM, <code>0xFEFF</code>/<code>0xFFFE</code>) die Bytereihenfolge.</p>
+
+      <div class="row">
+        <label for="encoding-format">Kodierung</label>
+        <select id="encoding-format">
+          <option value="ascii">ASCII</option>
+          <option value="utf8" selected>UTF-8</option>
+          <option value="utf16">UTF-16</option>
+          <option value="base64">Base64</option>
+        </select>
+        <label for="encoding-base">Zahlenformat</label>
+        <select id="encoding-base">
+          <option value="dec">Dezimal</option>
+          <option value="hex" selected>Hexadezimal</option>
+          <option value="bin">Binär</option>
+        </select>
+      </div>
+
+      <label for="encoding-text">Text</label>
+      <textarea id="encoding-text" rows="4" placeholder="Text hier eingeben..."></textarea>
+
+      <div class="row">
+        <button id="encoding-encode-btn">Kodieren ↓</button>
+        <button id="encoding-decode-btn">Dekodieren ↑</button>
+      </div>
+      <span id="encoding-status" class="status"></span>
+
+      <label for="encoding-code">Code</label>
+      <textarea id="encoding-code" rows="4" placeholder="Codes hier eingeben oder oben kodieren..."></textarea>
+    </div>
+
+    <div class="card">
+      <h3>Längenvergleich</h3>
+      <p class="hint">Vergleicht, wie viele Bits der aktuelle Text (Feld "Text" oben) je Kodierung benötigt. ASCII ist nur möglich, wenn ausschließlich Zeichen 0-127 vorkommen.</p>
+      <div class="huffman-stats-grid">
+        <div class="stat-box"><span class="stat-label">Zeichen</span><span class="stat-value" id="encoding-stat-chars"></span></div>
+        <div class="stat-box"><span class="stat-label">ASCII</span><span class="stat-value" id="encoding-stat-ascii"></span></div>
+        <div class="stat-box"><span class="stat-label">UTF-8</span><span class="stat-value" id="encoding-stat-utf8"></span></div>
+        <div class="stat-box"><span class="stat-label">UTF-16</span><span class="stat-value" id="encoding-stat-utf16"></span></div>
+      </div>
+      <div class="huffman-bars" id="encoding-bars"></div>
+    </div>
+
+    <div class="card">
+      <h3>Zeichen-Tabelle</h3>
+      <p class="hint">Codepoint, ASCII-, UTF-8- und UTF-16-Darstellung je Zeichen des aktuellen Texts.</p>
+      <div class="huffman-table-wrap">
+        <table class="huffman-table" id="encoding-char-table">
+          <thead><tr><th>Zeichen</th><th>Codepoint</th><th>ASCII</th><th>UTF-8 (Hex)</th><th>UTF-16 (Hex)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
