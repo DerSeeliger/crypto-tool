@@ -256,7 +256,8 @@
     <h2>Alphanumerische Codes</h2>
 
     <div class="card">
-      <p class="hint">Wandelt Text in numerische Codes um und zurück. ASCII deckt nur die Zeichen 0-127 ab, UTF-8 kodiert jedes Unicode-Zeichen mit 1-4 Bytes variabler Länge, UTF-16 mit 1-2 16-Bit-Einheiten (Surrogatpaare für Emoji &amp; Co.). Base64 stellt beliebige Bytes mit nur 64 druckbaren Zeichen dar. Hex-Werte erhalten das übliche Präfix <code>0x</code>, Binärwerte <code>0b</code>. Für UTF-16 selbst gibt es keinen eigenen Zahlenpräfix: Unicode-Codepoints schreibt man unabhängig von der Kodierung als <code>U+XXXX</code> (siehe Zeichen-Tabelle), und nur am Anfang eines UTF-16-<em>Bytestroms</em> markiert die Byte-Order-Mark (BOM, <code>0xFEFF</code>/<code>0xFFFE</code>) die Bytereihenfolge.</p>
+      <p class="hint">Wandelt Text in numerische Codes um und zurück. ASCII deckt nur die Zeichen 0-127 ab, UTF-8 kodiert jedes Unicode-Zeichen mit 1-4 Bytes variabler Länge, UTF-16 mit 1-2 16-Bit-Einheiten (Surrogatpaare für Emoji &amp; Co.). Base64 stellt beliebige Bytes mit nur 64 druckbaren Zeichen dar.</p>
+      <p class="hint">Byte-Order-Mark (BOM): Manche Programme (z.B. Windows-Editoren) stellen UTF-8/UTF-16-Daten ein unsichtbares Zeichen <code>U+FEFF</code> voran, um die Kodierung bzw. Bytereihenfolge zu markieren. Als Codeeinheit ist das immer <code>FEFF</code> - erst als rohe Bytes in der (üblichen) Little-Endian-Reihenfolge wird daraus <code>FF FE</code>; Big Endian ergäbe <code>FE FF</code>. Bei UTF-8 ist die BOM die 3 Bytes <code>EF BB BF</code>. Optional, vom Unicode-Standard nicht empfohlen, aber in der Praxis verbreitet.</p>
 
       <div class="row">
         <label for="encoding-format">Kodierung</label>
@@ -272,6 +273,7 @@
           <option value="hex" selected>Hexadezimal</option>
           <option value="bin">Binär</option>
         </select>
+        <label for="encoding-bom"><input type="checkbox" id="encoding-bom"> BOM voranstellen</label>
       </div>
 
       <label for="encoding-text">Text</label>

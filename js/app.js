@@ -331,6 +331,7 @@ document.getElementById('huffman-compress-btn').addEventListener('click', () => 
 // ---------- Alphanumerische Codes (ASCII / UTF-8 / UTF-16 / Base64) ----------
 const encodingFormat = document.getElementById('encoding-format');
 const encodingBase = document.getElementById('encoding-base');
+const encodingBom = document.getElementById('encoding-bom');
 const encodingText = document.getElementById('encoding-text');
 const encodingCode = document.getElementById('encoding-code');
 const encodingStatus = document.getElementById('encoding-status');
@@ -340,11 +341,14 @@ function setEncodingStatus(message, ok) {
   encodingStatus.className = 'status' + (ok ? ' ok' : '');
 }
 
-function updateEncodingBaseAvailability() {
-  encodingBase.disabled = encodingFormat.value === 'base64';
+function updateEncodingControlAvailability() {
+  const format = encodingFormat.value;
+  encodingBase.disabled = format === 'base64';
+  encodingBom.disabled = format === 'ascii' || format === 'base64';
+  if (encodingBom.disabled) encodingBom.checked = false;
 }
-encodingFormat.addEventListener('change', updateEncodingBaseAvailability);
-updateEncodingBaseAvailability();
+encodingFormat.addEventListener('change', updateEncodingControlAvailability);
+updateEncodingControlAvailability();
 
 document.getElementById('encoding-encode-btn').addEventListener('click', () => {
   const format = encodingFormat.value;
@@ -363,10 +367,14 @@ document.getElementById('encoding-encode-btn').addEventListener('click', () => {
           : '', invalidChars.length === 0
       );
     } else if (format === 'utf8') {
-      encodingCode.value = Encoding.formatNumbers(Encoding.toUtf8Bytes(text), base, 8);
+      const bytes = Encoding.toUtf8Bytes(text);
+      if (encodingBom.checked) bytes.unshift(...Encoding.BOM_UTF8_BYTES);
+      encodingCode.value = Encoding.formatNumbers(bytes, base, 8);
       setEncodingStatus('', true);
     } else if (format === 'utf16') {
-      encodingCode.value = Encoding.formatNumbers(Encoding.toUtf16Units(text), base, 16);
+      const units = Encoding.toUtf16Units(text);
+      if (encodingBom.checked) units.unshift(Encoding.BOM_UTF16_UNIT);
+      encodingCode.value = Encoding.formatNumbers(units, base, 16);
       setEncodingStatus('', true);
     }
   } catch (e) {
@@ -383,11 +391,11 @@ document.getElementById('encoding-decode-btn').addEventListener('click', () => {
     if (format === 'base64') {
       encodingText.value = Encoding.fromBase64(code);
     } else {
-      const numbers = Encoding.parseNumbers(code, base);
+      let numbers = Encoding.parseNumbers(code, base);
       if (numbers.some(Number.isNaN)) throw new Error('ungültige Zahl in der Eingabe');
       if (format === 'ascii') encodingText.value = Encoding.fromAsciiCodes(numbers);
-      else if (format === 'utf8') encodingText.value = Encoding.fromUtf8Bytes(numbers);
-      else if (format === 'utf16') encodingText.value = Encoding.fromUtf16Units(numbers);
+      else if (format === 'utf8') encodingText.value = Encoding.fromUtf8Bytes(Encoding.stripUtf8Bom(numbers));
+      else if (format === 'utf16') encodingText.value = Encoding.fromUtf16Units(Encoding.stripUtf16Bom(numbers));
     }
     setEncodingStatus('', true);
   } catch (e) {
@@ -433,8 +441,8 @@ function refreshEncodingAnalysis() {
       <td class="huffman-char">${Huffman.displayChar(row.char)}</td>
       <td>U+${row.codePoint.toString(16).toUpperCase().padStart(4, '0')}</td>
       <td>${row.ascii !== null ? row.ascii : '–'}</td>
-      <td class="huffman-code">${row.utf8Bytes.map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(' ')}</td>
-      <td class="huffman-code">${row.utf16Units.map(u => '0x' + u.toString(16).toUpperCase().padStart(4, '0')).join(' ')}</td>
+      <td class="huffman-code">${row.utf8Bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')}</td>
+      <td class="huffman-code">${row.utf16Units.map(u => u.toString(16).toUpperCase().padStart(4, '0')).join(' ')}</td>
     `;
     tbody.appendChild(tr);
   }

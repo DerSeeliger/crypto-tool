@@ -69,8 +69,8 @@ export function fromBase64(b64) {
  */
 export function formatNumbers(numbers, base, bitWidth = 8) {
   const hexDigits = Math.ceil(bitWidth / 4);
-  if (base === 'hex') return numbers.map(n => '0x' + n.toString(16).toUpperCase().padStart(hexDigits, '0')).join(' ');
-  if (base === 'bin') return numbers.map(n => '0b' + n.toString(2).padStart(bitWidth, '0')).join(' ');
+  if (base === 'hex') return numbers.map(n => n.toString(16).toUpperCase().padStart(hexDigits, '0')).join(' ');
+  if (base === 'bin') return numbers.map(n => n.toString(2).padStart(bitWidth, '0')).join(' ');
   return numbers.join(' ');
 }
 
@@ -81,6 +81,26 @@ export function parseNumbers(str, base) {
   const tokens = str.trim().split(/[\s,]+/).filter(Boolean);
   const radix = base === 'hex' ? 16 : base === 'bin' ? 2 : 10;
   return tokens.map(t => parseInt(t.replace(/^0[xXbB]/, ''), radix));
+}
+
+/**
+ * Byte-Order-Mark (BOM): ein optionales Zeichen U+FEFF am Anfang eines Texts,
+ * das beim Serialisieren in Bytes die Bytereihenfolge verrät. Als logische
+ * UTF-16-Codeeinheit ist es immer 0xFEFF; erst als rohe Bytes wird daraus je
+ * nach Bytereihenfolge FF FE (Little Endian, z.B. Windows) oder FE FF (Big
+ * Endian). Bei UTF-8 ist die BOM die 3-Byte-Folge EF BB BF (vom Unicode-
+ * Standard nicht empfohlen, aber von manchen Programmen trotzdem geschrieben).
+ */
+export const BOM_UTF16_UNIT = 0xFEFF;
+export const BOM_UTF8_BYTES = [0xEF, 0xBB, 0xBF];
+
+export function stripUtf16Bom(units) {
+  return units.length > 0 && units[0] === BOM_UTF16_UNIT ? units.slice(1) : units;
+}
+
+export function stripUtf8Bom(bytes) {
+  const [a, b, c] = BOM_UTF8_BYTES;
+  return bytes.length >= 3 && bytes[0] === a && bytes[1] === b && bytes[2] === c ? bytes.slice(3) : bytes;
 }
 
 /**
