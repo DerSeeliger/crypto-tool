@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Krypto-Werkzeug</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Krypto-Werkzeug</h1>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="caesar">Caesar</button>
+    <button class="tab-btn" data-tab="vigenere">Vigenère</button>
+    <button class="tab-btn" data-tab="substitution">Substitution</button>
+    <button class="tab-btn" data-tab="frequency">Häufigkeitsanalyse</button>
+    <button class="tab-btn" data-tab="huffman">Huffman</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============ CAESAR ============ -->
+  <section id="tab-caesar" class="tab-panel active">
+    <h2>Caesar-Chiffre</h2>
+
+    <div class="card">
+      <label for="caesar-input">Text</label>
+      <textarea id="caesar-input" rows="5" placeholder="Text hier eingeben..."></textarea>
+
+      <div class="row">
+        <label for="caesar-shift">Verschiebung (Schlüssel)</label>
+        <input type="number" id="caesar-shift" value="3" min="0" max="25">
+        <button id="caesar-encrypt-btn">Verschlüsseln</button>
+        <button id="caesar-decrypt-btn">Entschlüsseln</button>
+      </div>
+
+      <label for="caesar-output">Ergebnis</label>
+      <textarea id="caesar-output" rows="5" readonly></textarea>
+    </div>
+
+    <div class="card">
+      <h3>Brute-Force-Analyse</h3>
+      <p class="hint">Probiert alle 26 Verschiebungen aus dem Eingabetext (oben) und bewertet sie mit dem Chi-Quadrat-Test gegen eine Sprachverteilung. Die wahrscheinlichste Lösung steht oben.</p>
+      <div class="row">
+        <label for="caesar-bf-lang">Sprache</label>
+        <select id="caesar-bf-lang">
+          <option value="de">Deutsch</option>
+          <option value="en">Englisch</option>
+        </select>
+        <button id="caesar-bruteforce-btn">Brute-Force starten</button>
+      </div>
+      <div id="caesar-bf-results" class="results"></div>
+    </div>
+  </section>
+
+  <!-- ============ VIGENERE ============ -->
+  <section id="tab-vigenere" class="tab-panel">
+    <h2>Vigenère-Chiffre</h2>
+
+    <div class="card">
+      <label for="vigenere-input">Text</label>
+      <textarea id="vigenere-input" rows="5" placeholder="Text hier eingeben..."></textarea>
+
+      <div class="row">
+        <label for="vigenere-key">Schlüssel</label>
+        <input type="text" id="vigenere-key" placeholder="z.B. SCHLUESSEL">
+        <button id="vigenere-encrypt-btn">Verschlüsseln</button>
+        <button id="vigenere-decrypt-btn">Entschlüsseln</button>
+      </div>
+
+      <label for="vigenere-output">Ergebnis</label>
+      <textarea id="vigenere-output" rows="5" readonly></textarea>
+    </div>
+
+    <div class="card">
+      <h3>Kryptoanalyse (Index of Coincidence)</h3>
+      <p class="hint">Schätzt mögliche Schlüssellängen über den Koinzidenzindex und ermittelt für die wahrscheinlichsten Längen den Schlüssel per Häufigkeitsanalyse jeder Spalte. Verwendet den Eingabetext oben als Geheimtext.</p>
+      <div class="row">
+        <label for="vigenere-analyze-lang">Sprache</label>
+        <select id="vigenere-analyze-lang">
+          <option value="de">Deutsch</option>
+          <option value="en">Englisch</option>
+        </select>
+        <label for="vigenere-max-length">Max. Schlüssellänge</label>
+        <input type="number" id="vigenere-max-length" value="20" min="1" max="40">
+        <button id="vigenere-analyze-btn">Analyse starten</button>
+      </div>
+      <div id="vigenere-analysis-results" class="results"></div>
+    </div>
+  </section>
+
+  <!-- ============ SUBSTITUTION ============ -->
+  <section id="tab-substitution" class="tab-panel">
+    <h2>Monoalphabetische Substitution</h2>
+
+    <div class="card">
+      <h3>Ver-/Entschlüsseln mit bekanntem Schlüsselalphabet</h3>
+      <p class="hint">Das Schlüsselalphabet ordnet A-Z (Klartext) den 26 angegebenen Buchstaben (Geheimtext) zu, z.B. <code>QWERTZUIOPASDFGHJKLYXCVBNM</code>.</p>
+      <div class="row">
+        <label for="substitution-key">Schlüsselalphabet (26 Buchstaben)</label>
+        <input type="text" id="substitution-key" maxlength="26" placeholder="QWERTZUIOPASDFGHJKLYXCVBNM">
+        <button id="substitution-random-btn">Zufälliges Alphabet</button>
+      </div>
+      <span id="substitution-key-status" class="status"></span>
+
+      <label for="substitution-input">Text</label>
+      <textarea id="substitution-input" rows="5" placeholder="Text hier eingeben..."></textarea>
+
+      <div class="row">
+        <button id="substitution-encrypt-btn">Verschlüsseln</button>
+        <button id="substitution-decrypt-btn">Entschlüsseln</button>
+      </div>
+
+      <label for="substitution-output">Ergebnis</label>
+      <textarea id="substitution-output" rows="5" readonly></textarea>
+    </div>
+
+    <div class="card">
+      <h3>Kryptoanalyse (Häufigkeitsanalyse)</h3>
+      <p class="hint">Da Substitution nicht sinnvoll per Brute-Force lösbar ist (26! Möglichkeiten), hilft hier die Häufigkeitsanalyse: Geheimtextbuchstaben werden den wahrscheinlichsten Klartextbuchstaben zugeordnet. Passe die Zuordnung danach manuell an (z.B. anhand häufiger Wörter, Digramme wie "CH", "EI", "ER", "EN").</p>
+
+      <label for="substitution-cipher-input">Geheimtext</label>
+      <textarea id="substitution-cipher-input" rows="5" placeholder="Geheimtext hier einfügen..."></textarea>
+
+      <div id="substitution-freq-chart"></div>
+
+      <div class="row">
+        <label for="substitution-suggest-lang">Sprache</label>
+        <select id="substitution-suggest-lang">
+          <option value="de">Deutsch</option>
+          <option value="en">Englisch</option>
+        </select>
+        <button id="substitution-suggest-btn">Häufigkeits-Vorschlag anwenden</button>
+        <button id="substitution-reset-btn">Zuordnung zurücksetzen</button>
+      </div>
+
+      <h4>Zuordnung Geheimtext → Klartext</h4>
+      <div id="substitution-mapping-table" class="mapping-table"></div>
+
+      <label for="substitution-decoded-preview">Live-Vorschau (entschlüsselt mit obiger Zuordnung)</label>
+      <textarea id="substitution-decoded-preview" rows="5" readonly></textarea>
+    </div>
+  </section>
+
+  <!-- ============ FREQUENCY ============ -->
+  <section id="tab-frequency" class="tab-panel">
+    <h2>Häufigkeitsanalyse</h2>
+    <div class="card">
+      <p class="hint">Allgemeines Werkzeug: zeigt die Buchstabenhäufigkeit eines beliebigen Textes im Vergleich zur erwarteten Verteilung einer Sprache, sowie den Koinzidenzindex (IC).</p>
+      <label for="frequency-input">Text</label>
+      <textarea id="frequency-input" rows="6" placeholder="Text hier einfügen..."></textarea>
+      <div class="row">
+        <label for="frequency-lang">Referenzsprache</label>
+        <select id="frequency-lang">
+          <option value="de">Deutsch</option>
+          <option value="en">Englisch</option>
+        </select>
+        <button id="frequency-analyze-btn">Analysieren</button>
+      </div>
+      <div id="frequency-chart-container"></div>
+    </div>
+  </section>
+
+  <!-- ============ HUFFMAN ============ -->
+  <section id="tab-huffman" class="tab-panel">
+    <h2>Huffman-Codierung</h2>
+
+    <div class="card">
+      <p class="hint">Baut anhand der Zeichenhäufigkeit des Eingabetexts einen optimalen Huffman-Baum auf und kodiert den Text verlustfrei mit variabler Codewortlänge (häufige Zeichen erhalten kurze, seltene Zeichen lange Codes). Zum Vergleich wird die naive 8-Bit-ASCII-Codierung sowie die Entropie als theoretische untere Schranke angezeigt.</p>
+      <label for="huffman-input">Text</label>
+      <textarea id="huffman-input" rows="6" placeholder="Text hier eingeben..."></textarea>
+      <div class="row">
+        <button id="huffman-compress-btn">Komprimieren</button>
+      </div>
+    </div>
+
+    <div class="card" id="huffman-stats-card" hidden>
+      <h3>Statistik</h3>
+      <div class="huffman-stats-grid">
+        <div class="stat-box"><span class="stat-label">Zeichen (gesamt)</span><span class="stat-value" id="huffman-stat-total"></span></div>
+        <div class="stat-box"><span class="stat-label">Verschiedene Zeichen</span><span class="stat-value" id="huffman-stat-distinct"></span></div>
+        <div class="stat-box"><span class="stat-label">Entropie</span><span class="stat-value" id="huffman-stat-entropy"></span></div>
+        <div class="stat-box"><span class="stat-label">Ø Codewortlänge</span><span class="stat-value" id="huffman-stat-avglen"></span></div>
+        <div class="stat-box"><span class="stat-label">Länge Eingabe (ASCII)</span><span class="stat-value" id="huffman-stat-input-bits"></span></div>
+        <div class="stat-box"><span class="stat-label">Länge Ausgabe (Huffman)</span><span class="stat-value" id="huffman-stat-output-bits"></span></div>
+        <div class="stat-box"><span class="stat-label">Kompressionsrate</span><span class="stat-value" id="huffman-stat-ratio"></span></div>
+        <div class="stat-box"><span class="stat-label">Ersparnis</span><span class="stat-value" id="huffman-stat-savings"></span></div>
+      </div>
+      <div class="huffman-bars">
+        <div class="huffman-bar-row">
+          <span class="huffman-bar-label">Eingabe</span>
+          <div class="huffman-bar-track"><div class="huffman-bar huffman-bar-input" id="huffman-bar-input"></div></div>
+          <span class="huffman-bar-value" id="huffman-bar-input-value"></span>
+        </div>
+        <div class="huffman-bar-row">
+          <span class="huffman-bar-label">Ausgabe</span>
+          <div class="huffman-bar-track"><div class="huffman-bar huffman-bar-output" id="huffman-bar-output"></div></div>
+          <span class="huffman-bar-value" id="huffman-bar-output-value"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="huffman-table-card" hidden>
+      <h3>Wahrscheinlichkeiten &amp; Codes</h3>
+      <div class="huffman-table-wrap">
+        <table class="huffman-table" id="huffman-codes-table">
+          <thead><tr><th>Zeichen</th><th>Anzahl</th><th>Wahrscheinlichkeit</th><th>Code</th><th>Länge</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" id="huffman-tree-card" hidden>
+      <h3>Huffman-Baum</h3>
+      <div id="huffman-tree-container" class="huffman-tree-container"></div>
+    </div>
+
+    <div class="card" id="huffman-output-card" hidden>
+      <h3>Kodierte Ausgabe (Bitfolge)</h3>
+      <textarea id="huffman-output" rows="5" readonly></textarea>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Lokales Werkzeug · funktioniert offline · keine Daten verlassen den Browser</p>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+:root {
+  --bg: #1e1f29;
+  --panel: #2a2c3a;
+  --panel-2: #343650;
+  --accent: #7aa2f7;
+  --accent-2: #f7768e;
+  --text: #e6e6f0;
+  --text-dim: #a0a3bd;
+  --border: #44475a;
+  --good: #9ece6a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+header {
+  padding: 1.2rem 1.5rem 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  margin: 0 0 0.8rem 0;
+  font-size: 1.4rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.tab-btn {
+  background: var(--panel);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.tab-btn.active {
+  background: var(--bg);
+  color: var(--accent);
+  font-weight: bold;
+}
+
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+h2 { margin-top: 0; }
+h3 { margin-bottom: 0.4rem; }
+h4 { margin-bottom: 0.5rem; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.hint {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+label {
+  display: block;
+  margin: 0.6rem 0 0.3rem;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+textarea, input[type="text"], input[type="number"], select {
+  width: 100%;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.95rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.row label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.row input[type="number"] {
+  width: 6rem;
+}
+
+.row input[type="text"] {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.row select {
+  width: auto;
+}
+
+button {
+  background: var(--accent);
+  color: #1e1f29;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+button:hover { opacity: 0.85; }
+
+button.secondary {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.status {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--accent-2);
+}
+.status.ok { color: var(--good); }
+
+/* Brute-force / analysis result tables */
+.results {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.result-row {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+}
+
+.result-row:hover {
+  border-color: var(--accent);
+}
+
+.result-row.best {
+  border-color: var(--good);
+}
+
+.result-meta {
+  color: var(--text-dim);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  margin-bottom: 0.2rem;
+}
+
+.result-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Frequency chart */
+.freq-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 160px;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.freq-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.freq-bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  width: 100%;
+}
+
+.freq-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  min-height: 1px;
+}
+
+.freq-bar-text { background: var(--accent); }
+.freq-bar-ref { background: var(--accent-2); opacity: 0.6; }
+
+.freq-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+}
+
+.freq-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.freq-swatch {
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 2px;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+.freq-swatch-text { background: var(--accent); }
+.freq-swatch-ref { background: var(--accent-2); opacity: 0.6; }
+
+/* Substitution mapping table */
+.mapping-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.mapping-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.3rem;
+}
+
+.mapping-cell .cipher-letter {
+  font-weight: bold;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  margin-bottom: 0.2rem;
+}
+
+.mapping-cell .freq-pct {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 0.2rem;
+}
+
+.mapping-cell select {
+  width: 100%;
+  padding: 0.2rem;
+  font-size: 0.85rem;
+}
+
+/* Huffman: statistics grid */
+.huffman-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.stat-value {
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+/* Huffman: input/output length bars */
+.huffman-bars {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.huffman-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.huffman-bar-label {
+  width: 4.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.huffman-bar-track {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: 14px;
+  overflow: hidden;
+}
+
+.huffman-bar {
+  height: 100%;
+  border-radius: 4px 0 0 4px;
+}
+
+.huffman-bar-input { background: var(--accent); }
+.huffman-bar-output { background: var(--good); }
+
+.huffman-bar-value {
+  width: 6rem;
+  text-align: right;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+}
+
+/* Huffman: codes table */
+.huffman-table-wrap {
+  margin-top: 0.6rem;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.huffman-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.huffman-table th, .huffman-table td {
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.huffman-table th {
+  color: var(--text-dim);
+  font-weight: normal;
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+}
+
+.huffman-char, .huffman-code {
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+}
+
+.huffman-code { color: var(--accent); letter-spacing: 0.05em; }
+
+/* Huffman: tree visualization */
+.huffman-tree-container {
+  margin-top: 0.6rem;
+  overflow-x: auto;
+  padding: 0.4rem 0;
+}
+
+.huffman-tree-svg .huffman-edge {
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.huffman-tree-svg .huffman-edge-label {
+  fill: var(--text-dim);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.huffman-tree-svg .huffman-node-leaf {
+  fill: var(--panel-2);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.huffman-tree-svg .huffman-node-internal {
+  fill: var(--panel-2);
+  stroke: var(--good);
+  stroke-width: 1.5;
+}
+
+.huffman-tree-svg .huffman-node-label {
+  fill: var(--text);
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  padding: 1rem;
+}
